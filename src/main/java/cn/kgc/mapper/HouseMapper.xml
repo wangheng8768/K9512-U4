@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.kgc.mapper.HouseMapper">
+  <resultMap id="BaseResultMap" type="cn.kgc.entity.House">
+    <id column="ID" jdbcType="VARCHAR" property="id" />
+    <result column="USER_ID" jdbcType="INTEGER" property="userId" />
+    <result column="TYPE_ID" jdbcType="INTEGER" property="typeId" />
+    <result column="TITLE" jdbcType="VARCHAR" property="title" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="PRICE" jdbcType="DECIMAL" property="price" />
+    <result column="PUBDATE" jdbcType="DATE" property="pubdate" />
+    <result column="FLOORAGE" jdbcType="INTEGER" property="floorage" />
+    <result column="CONTACT" jdbcType="VARCHAR" property="contact" />
+    <result column="STREET_ID" jdbcType="INTEGER" property="streetId" />
+    <result column="ispass" jdbcType="INTEGER" property="ispass" />
+    <result column="isdel" jdbcType="INTEGER" property="isdel" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+  </resultMap>
+
+  <select id="getHouseByCurrentUser" parameterType="int" resultType="map">
+    SELECT house.*,type.`NAME` AS tname,
+street.`NAME` AS sname,
+district.`NAME` AS dname FROM house
+   LEFT JOIN `type` ON house.`TYPE_ID`=type.`ID`
+   LEFT JOIN street ON house.`STREET_ID`=`street`.`ID`
+   LEFT JOIN `district` ON street.`DISTRICT_ID`=`district`.`ID`
+  WHERE isdel=0 and user_id=#{userId}
+  </select>
+
+  <!--<update id="updateHouseIsdel" parameterType="string">-->
+    <!--update house set isdel = 1 where ID = #{id}-->
+  <!--</update>-->
+
+  <select id="getHouseByCondition" resultType="map" >
+    SELECT house.*,type.`NAME` AS tname,
+    street.`NAME` AS sname,
+    district.`NAME` AS dname FROM house
+    LEFT JOIN `type` ON house.`TYPE_ID`=type.`ID`
+    LEFT JOIN street ON house.`STREET_ID`=`street`.`ID`
+    LEFT JOIN `district` ON street.`DISTRICT_ID`=`district`.`ID`
+    WHERE isdel=0
+    <if test="houseCondition.title!=null and houseCondition.title!='' ">
+      and title like concat('%',#{houseCondition.title},'%')
+    </if>
+    <if test="houseCondition.did!=null">
+      and district.ID=#{houseCondition.did}
+    </if>
+    <if test="houseCondition.sid!=null">
+      and street.ID=#{houseCondition.sid}
+    </if>
+    <if test="houseCondition.tid!=null">
+      and TYPE_ID=#{houseCondition.tid}
+    </if>
+    <if test="houseCondition.startPrice!=null">
+      and price > #{houseCondition.startPrice}
+    </if>
+    <if test="houseCondition.endPrice!=null">
+      and  price &lt; #{houseCondition.endPrice}
+    </if>
+  </select>
+</mapper>
